@@ -2,6 +2,7 @@ package org.richfaces.arquillian.browser;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationHandler;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.Arrays;
@@ -75,11 +76,15 @@ public class PageLoader implements DroneInstanceEnhancer<WebDriver> {
          */
         @Override
         public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-            if (method.getName().equals(GET_METHOD_NAME)) {
-                tryToLoadPage(String.valueOf(args[0]));
-                return null;
-            } else {
-                return method.invoke(getOriginalInstance(), args);
+            try {
+                if (method.getName().equals(GET_METHOD_NAME)) {
+                    tryToLoadPage(String.valueOf(args[0]));
+                    return null;
+                } else {
+                    return method.invoke(getOriginalInstance(), args);
+                }
+            } catch (InvocationTargetException e) {
+                throw e.getCause();
             }
         }
 
